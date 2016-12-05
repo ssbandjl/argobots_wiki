@@ -63,7 +63,7 @@ Lines within files should be limited to 80 columns.
 
 ## Comments
 Use `/* */` and avoid `//` for writing comments. It allows compilers not supporting C99 to compile the source file with no problem on comments.
-If you want to write comments for doxygen documentation, refer to Code Documentation.
+If you want to write comments for doxygen documentation, refer to [Code Documentation](https://github.com/pmodels/argobots/wiki/Code-Documentation).
 
 ## Code cleanup script
 The script `maint/code-cleanup.sh` can be used to cleanup whitespace, comments, and line-wrapping in existing source files. It is a good idea to run it on any newly created files in the git repo.
