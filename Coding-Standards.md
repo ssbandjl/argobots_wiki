@@ -78,3 +78,50 @@ After `ABT_`, characters are all in lower case.
 
 ## Type and routine names
 Names for types and routines should be chosen in a way that (1) is descriptive of their function and (2) is clearly distinct from any name that may be used by another runtime library or user code. To achieve this, we have chosen to reserve a few prefixes for the use of the Argobots implementation:
+
+| Prefix   | Description |
+| -------- | ----------- |
+| `ABT_`   | This is used for public interface that is exposed to users. All public data types and APIs should start with this prefix. |
+| `ABTI_`  | This is used for internal data types and routines to implement the Argobots public APIs. This does not include device-specific types and routines. |
+| `ABTD_`  | This is used for device-specific data types and routines to implement `ABT_` and `ABTI_` routines. It plays a role of an interface to hide internal device-specific implementation. |
+| `ABTDI_` | This is used for internal implementation for device-specific types and routines. It implements `ABTD_` types and routines according to the target architecture. The configure script should correctly choose an appropriate implementation for the target architecture. |
+| `ABTU_`  | This is used for utility routines, which support general functions not only limited in implementation of Argobots. Therefore, utility routines should be able to be compiled independently. |
+
+## Macro and enum names
+Just like type and routine names, it is important to pick macro and enum names to avoid possible conflicts with others defined in system header files.
+
+| Prefix/Suffix | Description |
+| ------------- | ----------- |
+| `ABT_`        | Used for public interface. |
+| `ABTI_`, `ABTD_`, `ABTDI_`, `ABTU_` | Used for internal implementation. Each prefix has same meaning as one in type and routine names.  |
+| `DEBUG_`      | Used for debugging. |
+| `_H_INCLUDED` | This suffix should be used as the test for including a header (`.h`) file. |
+
+Every macro and enum name starting with above prefixes should be all uppercase.
+
+## Variables
+Some prefixes are used to distinguish global variables and pointers. For regular variables, currently there is no strict rule for naming them.
+
+| Prefix | Description |
+| ------ | ----------- |
+| `g_`   | Used for global variables |
+| `gp_`  | Used for global pointers |
+| `l_`   | Used for ES local variables, which are shared only in an ES |
+| `lp_`  | Used for ES local pointers |
+| `p_`   | Used for pointer variables |
+| `f_`   | Used for function pointers |
+
+# Error Handling
+TBD
+
+# Memory Allocation
+To manage dynamically-allocated memory in Argobots, we use a special set of memory allocation macros that are treated as utility routines. The macro names and their corresponding functions are the following:
+
+| Macro Name     | Corresponding Function |
+| -------------- | ---------------------- |
+| `ABTU_malloc`  | `malloc`  |
+| `ABTU_calloc`  | `calloc`  |
+| `ABTU_free`    | `free`    |
+| `ABTU_realloc` | `realloc` |
+
+The definitions are defined in `src/abtu.h`. We are planning to exploit these macros to test and diagnose memory corruption and leak problems when they occur.
