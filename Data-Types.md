@@ -6,6 +6,8 @@ This page presents data types, null objects, constants, and error classes used i
   * [Other Types](#other-types)
 * [Null Objects](#null-objects)
 * [Constants](#constants)
+  * [Constant Values](#constant-values)
+  * [Enum Values](#enum-values)
 * [Error Classes](#error-classes)
 
 # Data Types
@@ -27,42 +29,42 @@ All Argobots objects are opaque to users and can only be accessed via handles. A
 | `ABT_key`             | Handle to work unit-specific data key |
 | `ABT_mutex`           | Handle to mutex                       |
 | `ABT_mutex_attr`      | Handle to mutex attribute             |
-| `ABT_rwlock`          | Handle to readers-write lock          |
 | `ABT_cond`            | Handle to condition variable          |
+| `ABT_rwlock`          | Handle to readers-write lock          |
 | `ABT_eventual`        | Handle to eventual                    |
 | `ABT_future`          | Handle to future                      |
 | `ABT_barrier`         | Handle to work unit barrier           |
 | `ABT_timer`           | Handle to timer                       |
 
 ## Scalar Types
-| Type Name               | Description                          |
-| ----------------------- | ------------------------------------ |
-| `ABT_bool`              | Boolean type                         |
-| `ABT_xstream_state`     | ES state                             |
-| `ABT_sched_predef`      | Predefined scheduler                 |
-| `ABT_sched_state`       | Scheduler state                      |
-| `ABT_sched_type`        | Scheduler type                       |
+| Type Name               | Description                                   |
+| ----------------------- | --------------------------------------------- |
+| `ABT_bool`              | Boolean type                                  |
+| `ABT_xstream_state`     | ES state                                      |
+| `ABT_sched_predef`      | Predefined scheduler                          |
+| `ABT_sched_state`       | Scheduler state                               |
+| `ABT_sched_type`        | Scheduler type                                |
 | `ABT_sched_config_type` | Data type of scheduler configuration variable |
-| `ABT_pool_kind`         | Pool kind                            |
-| `ABT_pool_access`       | Pool access mode                     |
-| `ABT_unit_type`         | Scheduling unit type                 |
-| `ABT_thread_state`      | ULT state                            |
-| `ABT_thread_id`         | ULT ID                               |
-| `ABT_task_state`        | Tasklet state                        |
-| `ABT_event_kind`        | Event kind                           |
+| `ABT_pool_kind`         | Pool kind                                     |
+| `ABT_pool_access`       | Pool access mode                              |
+| `ABT_unit_type`         | Scheduling unit type                          |
+| `ABT_thread_state`      | ULT state                                     |
+| `ABT_thread_id`         | ULT ID                                        |
+| `ABT_task_state`        | Tasklet state                                 |
+| `ABT_event_kind`        | Event kind                                    |
 
 ## Other Types
 These are function pointers and struct types for scheduler and pool.
 
 ### Scheduler-related Types
-| Type Name                    | Description                                                  |
-| ---------------------------- | ------------------------------------------------------------ |
+| Type Name                    | Description                                                                       |
+| ---------------------------- | --------------------------------------------------------------------------------- |
 | `ABT_sched_config_var`       | Scheduler configuration variable, consisting of index and `ABT_sched_config_type` |
-| `ABT_sched_init_fn`          | Scheduler init function                                      |
-| `ABT_sched_run_fn`           | Scheduler run function                                       |
-| `ABT_sched_free_fn`          | Scheduler free function                                      |
-| `ABT_sched_get_migr_pool_fn` | Function that returns a pool ready for receiving a migration |
-| `ABT_sched_def`              | Struct of `ABT_sched_type` and above functions               |
+| `ABT_sched_init_fn`          | Scheduler init function                                                           |
+| `ABT_sched_run_fn`           | Scheduler run function                                                            |
+| `ABT_sched_free_fn`          | Scheduler free function                                                           |
+| `ABT_sched_get_migr_pool_fn` | Function that returns a pool ready for receiving a migration                      |
+| `ABT_sched_def`              | Struct of `ABT_sched_type` and above functions                                    |
 
 ### Pool-related Types
 | Type Name                        | Description                                                            |
@@ -85,6 +87,151 @@ These are function pointers and struct types for scheduler and pool.
 # Null Objects
 The following constants are defined to indicate handles to null objects for some public data types.
 
+| Constant                   | Description                                |
+| -------------------------- | ------------------------------------------ |
+| `ABT_XSTREAM_NULL`         | Handle to the null ES                      |
+| `ABT_XSTREAM_BARRIER_NULL` | Handle to the null ES barrier              |
+| `ABT_SCHED_NULL`           | Handle to the null scheduler               |
+| `ABT_SCHED_CONFIG_NULL`    | Handle to the null scheduler configuration |
+| `ABT_POOL_NULL`            | Handle to the null pool                    |
+| `ABT_POOL_CONFIG_NULL`     | Handle to the null pool configuration      |
+| `ABT_UNIT_NULL`            | Handle to the null unit                    |
+| `ABT_THREAD_NULL`          | Handle to the null ULT                     |
+| `ABT_THREAD_ATTR_NULL`     | Handle to the null ULT attribute           |
+| `ABT_TASK_NULL`            | Handle to the null tasklet                 |
+| `ABT_KEY_NULL`             | Handle to the null key                     |
+| `ABT_MUTEX_NULL`           | Handle to the null mutex                   |
+| `ABT_MUTEX_ATTR_NULL`      | Handle to the null mutex attribute         |
+| `ABT_COND_NULL`            | Handle to the null condition variable      |
+| `ABT_RWLOCK_NULL`          | Handle to the null readers-write lock      |
+| `ABT_EVENTUAL_NULL`        | Handle to the null eventual                |
+| `ABT_FUTURE_NULL`          | Handle to the null future                  |
+| `ABT_BARRIER_NULL`         | Handle to the null work unit barrier       |
+| `ABT_TIMER_NULL`           | Handle to the null timer                   |
+
 # Constants
+## Constant Values
+| Constant               | Description                                                             |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `ABT_TRUE`             | True value for `ABT_bool`                                               |
+| `ABT_FALSE`            | False value for `ABT_bool`                                              |
+| `ABT_XSTREAM_ANY_RANK` | Rank for indicating any ES                                              |
+| `ABT_CB_ON_TARGET`     | Indicates that the callback function needs to be executed on the target |
+| `ABT_CB_ON_SOURCE`     | Indicates that the callback function needs to be executed on the source |
+
+## Enum Values
+### ABT_xstream_state
+Each value represents ES's state.
+```c
+enum ABT_xstream_state {
+    ABT_XSTREAM_STATE_CREATED,
+    ABT_XSTREAM_STATE_READY,
+    ABT_XSTREAM_STATE_RUNNING,
+    ABT_XSTREAM_STATE_TERMINATED
+};
+```
+
+### ABT_sched_predef
+Each value is used to create a predefined scheduler.
+```c
+enum ABT_sched_predef {
+    ABT_SCHED_DEFAULT,   /* Default scheduler */
+    ABT_SCHED_BASIC,     /* Basic scheduler */
+    ABT_SCHED_PRIO,      /* Priority scheduler */
+    ABT_SCHED_RANDWS     /* Random work-stealing scheduler */
+};
+```
+
+### ABT_sched_state
+Each value represents schedulers' state.
+```c
+enum ABT_sched_state {
+    ABT_SCHED_STATE_READY,
+    ABT_SCHED_STATE_RUNNING,
+    ABT_SCHED_STATE_STOPPED,
+    ABT_SCHED_STATE_TERMINATED
+};
+```
+
+### ABT_sched_type
+Each value represents a type of scheduler, such as ULT-type or tasklet-type.
+```c
+enum ABT_sched_type {
+    ABT_SCHED_TYPE_ULT,  /* can yield */
+    ABT_SCHED_TYPE_TASK  /* cannot yield */
+};
+```
+
+### ABT_sched_config_type
+Each value is used to indicate the type of scheduler configuration variable (i.e., `ABT_sched_config_var`).
+```c
+enum ABT_sched_config_type {
+    ABT_SCHED_CONFIG_INT    = 0, /* Parameter of type int */
+    ABT_SCHED_CONFIG_DOUBLE = 1, /* Parameter of type double */
+    ABT_SCHED_CONFIG_PTR    = 2, /* Parameter of type pointer */
+};
+```
+
+### ABT_pool_kind
+Each value represents a kind of predefined pool and is used to create a predefined pool.
+```c
+enum ABT_pool_kind {
+    ABT_POOL_FIFO
+};
+```
+
+### ABT_pool_access
+Each value represents an access mode for pool. It is used when creating a pool.
+```c
+enum ABT_pool_access {
+    ABT_POOL_ACCESS_PRIV, /* Used by only one ES */
+    ABT_POOL_ACCESS_SPSC, /* Producers on ES1, consumers on ES2 */
+    ABT_POOL_ACCESS_MPSC, /* Producers on any ES, consumers on the same ES */
+    ABT_POOL_ACCESS_SPMC, /* Producers on the same ES, consumers on any ES */
+    ABT_POOL_ACCESS_MPMC  /* Producers on any ES, consumers on any ES */
+};
+```
+
+### ABT_unit_type
+Each value represents the type of object that an `ABT_unit` object contains.
+```c
+enum ABT_unit_type {
+    ABT_UNIT_TYPE_THREAD,   /* ULT */
+    ABT_UNIT_TYPE_TASK,     /* Tasklet */
+    ABT_UNIT_TYPE_XSTREAM,  /* ES */
+    ABT_UNIT_TYPE_EXT       /* External thread */
+};
+```
+
+### ABT_thread_state
+Each value represents ULT's state.
+```c
+enum ABT_thread_state {
+    ABT_THREAD_STATE_READY,
+    ABT_THREAD_STATE_RUNNING,
+    ABT_THREAD_STATE_BLOCKED,
+    ABT_THREAD_STATE_TERMINATED
+};
+```
+
+### ABT_task_state
+Each value represents tasklet's state.
+```c
+enum ABT_task_state {
+    ABT_TASK_STATE_CREATED,
+    ABT_TASK_STATE_READY,
+    ABT_TASK_STATE_RUNNING,
+    ABT_TASK_STATE_TERMINATED
+};
+```
+
+### ABT_event_kind
+Each value represents a kind of event.
+```c
+enum ABT_event_kind {
+    ABT_EVENT_STOP_XSTREAM,     /* stop the target ES */
+    ABT_EVENT_ADD_XSTREAM,      /* create a new ES */
+};
+```
 
 # Error Classes
