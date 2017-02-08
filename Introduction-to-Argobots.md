@@ -1,0 +1,52 @@
+* [Overview](#overview)
+* [Execution Model](#execution-model)
+  * [User-level Threads and Tasklets](#user-level-threads-and-tasklets)
+  * [Work Unit Migration](#work-unit-migration)
+  * [Stackable Scheduler with Pluggable Strategies](#stackable-scheduler-with-pluggable-strategies)
+* [Memory Model](#memory-model)
+  * [Consistency Domains](#consistency-domains)
+* [Organization of this Document](#organization-of-this-document)
+
+# Overview
+Concurrency in today's most powerful HPC systems is exploding. As the future exascale systems are likely to be composed of hundreds of millions of arithmetic units, future applications may contain billions of threads or tasks to exploit concurrency provided by the underlying hardware. However, achieving billion-way parallelism requires highly dynamic computational and data scheduling. The traditional, low-performing heavyweight threading and messaging models are not capable of supporting the massive parallelism because they often optimize the segregation and layering of components in favor of one dimension, e.g., computation or communication. Therefore, it is required to provide a lightweight execution model that combines low-latency thread and task scheduling with optimized data-movement functionality.
+
+**Argobots** is a low-level infrastructure that supports a lightweight thread and task model for massive concurrency. It will directly leverage the lowest-level constructs in the hardware and OS: lightweight notification mechanisms, data movement engines, memory mapping, and data placement strategies. It consists of an execution model and a memory model.
+
+# Execution Model
+Argobots supports two levels of parallelism: Execution Streams (ESs) and Work Units (WUs). ES is a sequential instruction stream that contains one or more WUs. It is bound to hardware resources and guarantee progress. WUs are lightweight execution unit, such as User-level Threads (ULTs) or tasklets. They are associated with function calls and each WU will execute to its completion. A WU can be associated with an ES and the ES runs all associated WUs according to the scheduling strategy. Basically, there is no concurrent execution of WUs in a single ES. However, WUs in different ESs can be executed concurrently.
+
+Two abstractions are envisioned in Argobots. The first abstraction supports lightweight concurrent execution, such as ULTs or tasklets, that can dynamically and efficiently adapt to the tug of requirements from applications and hardware resources. ULTs and tasklets must be efficiently scheduled based on power, resilience, memory locality, and capabilities. The second abstraction supports low-latency, lightweight, message-driven activation.
+
+The guiding design principle for scheduler is the cooperative, nonpreemptive activation of schedulable units of computation (ULTs or tasklets) on the managed hardware resources. Localized scheduling strategies such as those used in current runtime systems, while efficient for short execution, are unaware of global strategies and priorities. Adaptability and dynamic system behavior must be handled by scheduling strategies that can change over time or be customized for a particular algorithm or data structure. "Plugging" in a specialized scheduling strategy lets the OS/R handle the mechanism and utilize lightweight notification features while leaving the policy to higher levels of the system-software stack.
+
+## User-level Threads and Tasklets
+User-level Threads (ULTs) and tasklets offer applications an abstraction for fine-grained parallelism. Each ULT or tasklet is an independent execution unit scheduled by the runtime system. They differ in subtle aspects that make each of them better suited for some programming motifs. For example, a ULT has its own persistent stack region, while a tasklet borrows the stack of its host ES's scheduler. We expect the higher-level programming models to decompose their computation in terms of these basic scheduling units.
+
+ULTs are excellent for expressing parallelism in terms of persistent contexts whose flow of control pauses and resumes based on the flow of data. A common example is an overdecomposed application that uses blocking receives (or futures) to wait for remote data. Unlike traditional OS threads, ULTs are not intended to be preempted. They cooperatively yield control to the scheduler, for example, when they wait for remote data or just wish to let other work progress.
+
+Tasklet in Argobots is an indivisible unit of work, with dependence only on its input data, and typically providing output data upon completion. Tasklets are excellent for expressing concurrency based on the Bernstein conditions. Application-level examples of tasks include a force-evaluation object in molecular dynamics, which executes when two sets of atoms are available, or a trailing update in LU decomposition, which executes the matrix-matrix (GEMM) computation when the two blocks of matrices are available. Tasklets do not explicitly yield control but run to completion before returning control to the scheduler that invoked them.
+
+ULTs and tasklets can be scheduled independently based on their own policies, including arrival of remote data, availability of memory, or data dependencies. Both ULTs and tasklets may maintain affinity to one or more data objects, which the scheduler will consider in the decision making. Once ready to execute, both ULTs and tasklets are managed by a scheduler with a common work pool.
+
+## Work Unit Migration
+Argobots supports migration of work units (ULTs or tasklets) between different locations, i.e., ESs or scheduler pools. Basically, all ULTs, which are created by the user, can be migrated unless they are terminated. However, tasklets can only be migrated if they have not started the execution. Migration operation can be blocking or non-blocking depending on the request. And, if a callback function is set, it will be invoked when the migration happens.
+
+Migration operations are divided into two categories: work unit-centric migration and location-centric migration. Both operations can be used as push and pull interfaces for migration.
+
+Work unit-centric migration is to migrate one work unit to another ES or another pool. Depending on who requests the migration, it can be a push or pull operation. For example, if a work unit W0 requests to migrate a work unit W1 to an ES or a pool that is different from that of W0, it is a push operation. It pushes a work unit W1 to a different location. However, if W1 is migrated to the ES or the pool where the calling work unit W0 is residing, it is a pull operation. Work unit-centric migration also includes the interface to make a work unit orphaned, i.e., it makes the work unit have no association with any ES and any pool.
+
+Location-centric migration is to relocate a certain number of work units associated with a specific ES or pool to a different ES or pool. This approach focuses on locations where the migration happens rather than work units to be migrated. The migration routines of this category specify the source location, the target location, and the number of work units to be migrated, but they do not specify which work units to migrate. The location-centric migration can be viewed as a push operation if it is requested by a work unit whose associated ES or pool is different from the target. Otherwise, i.e., if the target is the same as the ES or the pool associated with the calling work unit, it behaves like a pull operation.
+
+## Stackable Scheduler with Pluggable Strategies
+The overall scheduling framework is centered on the notion of stackable or nested schedulers with multiple pluggable scheduling strategies. Plugging in custom strategies modifies the scheduling rules for all tasks managed by that scheduler instance. Pluggability also expects the input required for these decisions to be available at a single point in the OS/R software stack. In addition to pluggable strategies, the OS/R scheduler will permit nesting (stacking) scheduler engines specific to the programming language or application component. For example, the system could accept a scheduler for each module in an application; and based on dependencies or relative module priorities, the OS/R scheduler may invoke one of the stacked schedulers. This can now activate its tasks on the managed hardware and yield control back upon completion. Similarly stacked schedulers might be a result of multiple programming languages interacting in the context of the single OS/R scheduler. A framework based on task-dependency analysis might choose to schedule tasks once dependencies are satisfied. This will be expressed as a stacked scheduler that handles the DAG dependency analysis and schedules tasks or simply propagates them to the OS/R scheduler once they are "ready" to be activated.
+
+# Memory Model
+Current communication libraries are not well integrated with the scheduler or the memory manager. All three must work together in order to support optimized data movement across nodes and provide the features needed by the higher layers that built the specific programming environment. Argobots provides an integrated memory model that supports eventual consistency.
+
+## Consistency Domains
+Current hardware couples consistency and coherence into one, but this can be expensive on NUMA machines or non-DRAM like memories. Argobots decouples consistency and coherence by explicitly divide memory space into difference domains. There are three level of consistency in Argobots: 1. Consistency Domains (CDs); 2. Non-coherent Load/Store Domains (NCLSDs); 3. Outside an NCLSD.
+
+A Consistency Domain is a region of memory that data becomes eventually consistent, which means if no new updates are made to a given data item, eventually all accesses to that item will return the last updated value. At the same time, immediate consistency can be enforced with memory barriers. In NCLSD, data are accessed using load/store, but not hardware consistency is provided. Outside an NCLSD, explicit Put/Get/Messaging models are used to move data.
+
+# Organization of this Document
+The remaining parts of this document begin with Terms and Conventions, which explains Argobots terms and conventions used throughout this document. It then describes Argobots components and their APIs.
