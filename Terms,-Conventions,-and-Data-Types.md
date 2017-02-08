@@ -44,7 +44,44 @@ The arguments of Argobots APIs in this document are marked as `[in]`, `[out]`, `
 ## Object Types
 All Argobots objects are opaque to users and can only be accessed via handles. All public APIs use handles or pointers to handles.
 
+| Type Name             | Description                           |
+| --------------------- | ------------------------------------- |
+| `ABT_xstream`         | Handle to Execution Stream (ES)       |
+| `ABT_xstream_barrier` | Handle to ES barrier                  |
+| `ABT_sched`           | Handle to scheduler                   |
+| `ABT_sched_config`    | Handle to scheduler configuration     |
+| `ABT_pool`            | Handle to pool                        |
+| `ABT_pool_config`     | Handle to pool configuration          |
+| `ABT_unit`            | Handle to scheduling unit             |
+| `ABT_thread`          | Handle to User-level Thread (ULT)     |
+| `ABT_thread_attr`     | Handle to ULT attribute               |
+| `ABT_task`            | Handle to tasklet                     |
+| `ABT_key`             | Handle to work unit-specific data key |
+| `ABT_mutex`           | Handle to mutex                       |
+| `ABT_mutex_attr`      | Handle to mutex attribute             |
+| `ABT_rwlock`          | Handle to readers-write lock          |
+| `ABT_cond`            | Handle to condition variable          |
+| `ABT_eventual`        | Handle to eventual                    |
+| `ABT_future`          | Handle to future                      |
+| `ABT_barrier`         | Handle to work unit barrier           |
+| `ABT_timer`           | Handle to timer                       |
+
 ## Scalar Types
+| Type Name               | Description                          |
+| ----------------------- | ------------------------------------ |
+| `ABT_bool`              | Boolean type                         |
+| `ABT_xstream_state`     | ES state                             |
+| `ABT_sched_predef`      | Predefined scheduler                 |
+| `ABT_sched_state`       | Scheduler state                      |
+| `ABT_sched_type`        | Scheduler type                       |
+| `ABT_sched_config_type` | Data type of scheduler configuration |
+| `ABT_pool_kind`         | Pool kind                            |
+| `ABT_pool_access`       | Pool access mode                     |
+| `ABT_unit_type`         | Scheduling unit type                 |
+| `ABT_thread_state`      | ULT state                            |
+| `ABT_thread_id`         | ULT ID                               |
+| `ABT_task_state`        | Tasklet state                        |
+| `ABT_event_kind`        | Event kind                           |
 
 ## Other Types
 
