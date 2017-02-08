@@ -235,3 +235,57 @@ enum ABT_event_kind {
 ```
 
 # Error Classes
+| Constant                      | Description                                       |
+| ----------------------------- | ------------------------------------------------- |
+| `ABT_SUCCESS`                 | Successful return code                            |
+| `ABT_ERR_UNINITIALIZED`       | Argobots is not initialized                       |
+| `ABT_ERR_MEM`                 | Memory allocation failure                         |
+| `ABT_ERR_OTHER`               | Other error                                       |
+| `ABT_ERR_INV_XSTREAM`         | Invalid ES                                        |
+| `ABT_ERR_INV_XSTREAM_RANK`    | Invalid ES rank                                   |
+| `ABT_ERR_INV_XSTREAM_BARRIER` | Invalid ES barrier                                |
+| `ABT_ERR_INV_SCHED`           | Invalid scheduler                                 |
+| `ABT_ERR_INV_SCHED_KIND`      | Invalid scheduler kind                            |
+| `ABT_ERR_INV_SCHED_PREDEF`    | Invalid predefined scheduler                      |
+| `ABT_ERR_INV_SCHED_TYPE`      | Invalid scheduler type                            |
+| `ABT_ERR_INV_SCHED_CONFIG`    | Invalid scheduler configuration                   |
+| `ABT_ERR_INV_POOL`            | Invalid pool                                      |
+| `ABT_ERR_INV_POOL_ACCESS`     | Invalid pool access mode                          |
+| `ABT_ERR_INV_UNIT`            | Invalid scheduling unit                           |
+| `ABT_ERR_INV_THREAD`          | Invalid ULT                                       |
+| `ABT_ERR_INV_THREAD_ATTR`     | Invalid ULT attribute                             |
+| `ABT_ERR_INV_TASK`            | Invalid tasklet                                   |
+| `ABT_ERR_INV_KEY`             | Invalid key                                       |
+| `ABT_ERR_INV_MUTEX`           | Invalid mutex                                     |
+| `ABT_ERR_INV_MUTEX_ATTR`      | Invalid mutex attribute                           |
+| `ABT_ERR_INV_COND`            | Invalid condition variable                        |
+| `ABT_ERR_INV_RWLOCK`          | Invalid readers-writer lock                       |
+| `ABT_ERR_INV_EVENTUAL`        | Invalid eventual                                  |
+| `ABT_ERR_INV_FUTURE`          | Invalid future                                    |
+| `ABT_ERR_INV_BARRIER`         | Invalid work unit barrier                         |
+| `ABT_ERR_INV_TIMER`           | Invalid timer                                     |
+| `ABT_ERR_INV_EVENT`           | Invalid event                                     |
+| `ABT_ERR_XSTREAM`             | ES-related error                                  |
+| `ABT_ERR_XSTREAM_STATE`       | ES state error                                    |
+| `ABT_ERR_XSTREAM_BARRIER`     | ES barrier-related error                          |
+| `ABT_ERR_SCHED`               | Scheduler-related error                           |
+| `ABT_ERR_SCHED_CONFIG`        | Scheduler configuration error                     |
+| `ABT_ERR_POOL`                | Pool-related error                                |
+| `ABT_ERR_UNIT`                | Scheduling unit-related error                     |
+| `ABT_ERR_THREAD`              | ULT-related error                                 |
+| `ABT_ERR_TASK`                | Task-related error                                |
+| `ABT_ERR_KEY`                 | Key-related error                                 |
+| `ABT_ERR_MUTEX`               | Mutex-related error                               |
+| `ABT_ERR_MUTEX_LOCKED`        | Return value when the mutex is already locked     |
+| `ABT_ERR_COND`                | Condition variable-related error                  |
+| `ABT_ERR_COND_TIMEDOUT`       | Return value when condition variable is timed out |
+| `ABT_ERR_RWLOCK`              | rwlock-related error                              |
+| `ABT_ERR_EVENTUAL`            | Eventual-related error                            |
+| `ABT_ERR_FUTURE`              | Future-related error                              |
+| `ABT_ERR_BARRIER`             | Work unit barrier-related error                   |
+| `ABT_ERR_TIMER`               | Timer-related error                               |
+| `ABT_ERR_EVENT`               | Event-related error                               |
+| `ABT_ERR_MIGRATION_TARGET`    | Target does not accept migration                  |
+| `ABT_ERR_MIGRATION_NA`        | Migration is not available                        |
+| `ABT_ERR_MISSING_JOIN`        | An ES or more did not join                        |
+| `ABT_ERR_FEATURE_NA`          | Feature not available                             |
