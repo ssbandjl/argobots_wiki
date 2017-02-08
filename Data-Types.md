@@ -40,18 +40,18 @@ All Argobots objects are opaque to users and can only be accessed via handles. A
 | Type Name               | Description                                   |
 | ----------------------- | --------------------------------------------- |
 | `ABT_bool`              | Boolean type                                  |
-| `ABT_xstream_state`     | ES state                                      |
-| `ABT_sched_predef`      | Predefined scheduler                          |
-| `ABT_sched_state`       | Scheduler state                               |
-| `ABT_sched_type`        | Scheduler type                                |
-| `ABT_sched_config_type` | Data type of scheduler configuration variable |
-| `ABT_pool_kind`         | Pool kind                                     |
-| `ABT_pool_access`       | Pool access mode                              |
-| `ABT_unit_type`         | Scheduling unit type                          |
-| `ABT_thread_state`      | ULT state                                     |
-| `ABT_thread_id`         | ULT ID                                        |
-| `ABT_task_state`        | Tasklet state                                 |
-| `ABT_event_kind`        | Event kind                                    |
+| `ABT_xstream_state`     | ES state (see [values](#abt_xstream_state))   |
+| `ABT_sched_predef`      | Predefined scheduler (see [values](#abt_sched_predef)) |
+| `ABT_sched_state`       | Scheduler state (see [values](#abt_sched_state))       |
+| `ABT_sched_type`        | Scheduler type (see [values](#abt_sched_type))         |
+| `ABT_sched_config_type` | Data type of scheduler configuration variable (see [values](#abt_sched_config_type)) |
+| `ABT_pool_kind`         | Pool kind (see [values](#abt_pool_kind))            |
+| `ABT_pool_access`       | Pool access mode (see [values](#abt_pool_access))   |
+| `ABT_unit_type`         | Scheduling unit type (see [values](#abt_unit_type)) |
+| `ABT_thread_state`      | ULT state (see [values](#abt_thread_state))         |
+| `ABT_thread_id`         | ULT ID                                              |
+| `ABT_task_state`        | Tasklet state (see [values](#abt_task_state))       |
+| `ABT_event_kind`        | Event kind (see [values](#abt_event_kind))          |
 
 ## Other Types
 These are function pointers and struct types for scheduler and pool.
