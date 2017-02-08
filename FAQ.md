@@ -2,8 +2,8 @@
    * ['LIBTOOL' is undefined](#libtool)
 
 
-# `autogen.sh` Errors <a name="autogen">
-## 'LIBTOOL' is undefined <a name="libtool">
+# <a name="autogen">`autogen.sh` Errors</a>
+## <a name="libtool">'LIBTOOL' is undefined</a>
 If you get this error when running `./autogen.sh`
 ```
 =================================================================
