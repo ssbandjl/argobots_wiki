@@ -45,4 +45,4 @@ Generated documents will be located in `doc/doxygen`.
 
 # Current snapshot
 The following link shows the doxygen html generated from the current git repository.
-* <http://www.mcs.anl.gov/~sseo/public/argobots/>
+* <http://www.argobots.org/static/doxygen/latest/>
