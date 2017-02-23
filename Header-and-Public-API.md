@@ -7,6 +7,6 @@ The header file for Argobots is `abt.h`. It contains constants, data types, and 
 # Public API
 Please refer to the following doxygen document:
 
-http://www.mcs.anl.gov/~sseo/public/argobots/modules.html
+http://www.argobots.org/static/doxygen/latest/modules.html
 
 This will show the public API supported in the current implementation.
