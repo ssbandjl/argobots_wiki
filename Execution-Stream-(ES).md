@@ -92,3 +92,113 @@ int ABT_xstream_start(ABT_xstream xstream)
   * On error, a non-zero error code is returned.
 * Details
   * `ABT_xstream_start()` starts the target ES `xstream` if it has not been started. That is, this routine is effective only when the state of the target ES is CREATED or READY, and once this routine returns, the ES's state becomes RUNNING.
+
+## ABT_xstream_free()
+```c
+int ABT_xstream_free(ABT_xstream *xstream)
+```
+* Free the ES object.
+* Parameters
+  * [in,out] `xstream`: handle to the target ES
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_free()` deallocates the memory used for the ES object associated with the handle `xstream`. If it successfully returns, `xstream` is set to `ABT_XSTREAM_NULL`.
+  * If the ES of `xstream` is still running when this routine is called, the deallocation happens after the ES terminates and then this routine returns. This means that the caller can be blocked until this routine returns.
+  * The scheduler object is not freed by this routine if it was created and provided by a user. It should be freed by `ABT_sched_free()`. If the user did not specify a scheduler for the target ES, the memory for default scheduler is automatically freed by this routine.
+  * This function must not be used to free the primary ES. The object for primary ES will be freed when `ABT_finalize()` is called. And, a work unit associated with the target ES cannot call this function.
+
+## ABT_xstream_join()
+```c
+int ABT_xstream_join(ABT_xstream xstream)
+```
+* Wait for the ES to terminate.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * The caller of `ABT_xstream_join()` waits for the ES to terminate. If the target ES has already terminated, this function returns immediately.
+  * The target ES cannot be the same as the ES associated with the calling work unit. And the primary ES cannot be joined. If one of these conditions is violated, this routine will return the error code, `ABT_ERR_INV_XSTREAM`.
+
+## ABT_xstream_exit()
+```c
+int ABT_xstream_exit(void)
+```
+* Terminate the ES.
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * The ULT calling `ABT_xstream_exit()` forces the associated ES to terminate regardless of other remaining work units in the ES. Work units that are not terminated yet will need to be migrated to different ESs or pools.
+  * Since the ES associated with calling ULT finishes its execution, this function never returns to the caller if the ES terminates successfully. Tasklets are not allowed to call this function.
+
+## ABT_xstream_cancel()
+```c
+int ABT_xstream_cancel(ABT_xstream xstream)
+```
+* Request the cancelation of the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_cancel()` requests the cancellation of the target ES and immediately returns to the caller. The result of the cancellation can be checked later by `ABT_xstream_get_state()`. Only secondary ESs can be canceled by this function.
+  * Cancelation may be deferred if a work unit is running on the ES. The actual cancelation will take place when the associated scheduler gets a chance to execute. Other remaining work units in the ES will not be executed and will need to be migrated to different ESs or pools.
+
+## ABT_xstream_self()
+```c
+int ABT_xstream_self(ABT_xstream *xstream)
+```
+* Return the ES handle associated with the caller work unit.
+* Parameter
+  * [out] `xstream`: ES handle
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_self()` returns the handle to ES object associated with the caller work unit through `xstream`. When an error occurs, `xstream` is set to `ABT_XSTREAM_NULL`.
+
+## ABT_xstream_self_rank()
+```c
+int ABT_xstream_self_rank(int *rank)
+```
+* Return the rank of ES associated with the caller work unit.
+* Parameter
+  * [out] `rank `: ES rank
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_self_rank()` returns the rank of ES associated with the caller work unit.
+
+## ABT_xstream_set_rank()
+```c
+int ABT_xstream_set_rank(ABT_xstream xstream, const int rank)
+```
+* Set the rank for target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [in] `rank`: ES rank
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_set_rank()` sets the rank for target ES specified by `xstream`.
+
+## ABT_xstream_get_rank()
+```c
+int ABT_xstream_get_rank(ABT_xstream xstream, int *rank)
+```
+* Return the rank of target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [out] `rank`: ES rank
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_get_rank()` returns the rank of target ES through `rank`.
