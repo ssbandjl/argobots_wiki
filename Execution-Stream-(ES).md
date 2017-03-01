@@ -30,3 +30,65 @@ The following describes each state of ES:
 * When there is a join request, ES's state becomes TERMINATED. In the CREATED state, it is immediately terminated. However, in other states, it will be terminated after finishing execution of all associated work units. It processes the join request only when it is in READY state.
 * When a work unit invokes the ES exit function, its associated ES is terminated irrespective of the existence of work units and the ES's state becomes TERMINATED. The user has to migrate remaining work units associated with the terminating ES, if necessary.
 * When there is a cancel request, ES's state becomes TERMINATED from all states. When a work unit is running, i.e., the ES is in RUNNING state, the ES will be terminated after the associated scheduler gets a chance to execute. Like the ES exit function, the user may need to migrate remaining work units associated with the terminating ES, if necessary.
+
+# ES Execution
+## ABT_xstream_create()
+```c
+int ABT_xstream_create(ABT_sched sched, ABT_xstream *newxstream)
+```
+* Create a new ES.
+* Parameters
+  * [in] `sched`: handle to the scheduler used for a new ES
+  * [out] `newxstream`: handle to a newly created ES
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_create()` creates a new ES with a specific scheduler passed as `sched` and returns its handle through `newxstream`.  If `sched` is `ABT_SCHED_NULL`, the runtime-provided scheduler is used for the new ES.
+
+## ABT_xstream_create_basic()
+```c
+int ABT_xstream_create_basic(ABT_sched_predef predef, int num_pools, ABT_pool *pools,
+                             ABT_sched_config config, ABT_xstream *newxstream)
+```
+* Create a new ES with a predefined scheduler.
+* Parameters
+  * [in] `predef`: predefined scheduler (see [here](https://github.com/pmodels/argobots/wiki/Data-Types#abt_sched_predef) for details)
+  * [in] `num_pools`: number of pools
+  * [in] `pools`: array of pools to be associated with the scheduler
+  * [in] `config`: config used during the scheduler creation
+  * [out] `newxstream`: handle to a newly created ES
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_create_basic()` creates a new ES with a system-provided scheduler specified as `predef` and returns its handle through `newxstream`.  If `predef` is a scheduler that includes automatic creation of pools, `pools` can be `NULL`.
+
+## ABT_xstream_create_with_rank()
+```c
+int ABT_xstream_create_with_rank(ABT_sched sched, int rank, ABT_xstream *newxstream)
+```
+* Create a new ES with a specific rank.
+* Parameters
+  * [in] `sched`: handle to the scheduler used for a new ES
+  * [in] `rank`: target rank
+  * [out] `newxstream`: handle to a newly created ES
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * `ABT_ERR_INV_XSTREAM_RANK`, if `rank` is invalid.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_create_with_rank()` creates a new ES with a scheduler `sched` and a specific rank `rank` and returns its handle through `newxstream`. If `sched` is `ABT_SCHED_NULL`, the runtime-provided scheduler is used for the new ES.
+
+## ABT_xstream_start()
+```c
+int ABT_xstream_start(ABT_xstream xstream)
+```
+* Start the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_start()` starts the target ES `xstream` if it has not been started. That is, this routine is effective only when the state of the target ES is CREATED or READY, and once this routine returns, the ES's state becomes RUNNING.
