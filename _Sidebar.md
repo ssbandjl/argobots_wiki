@@ -1,6 +1,11 @@
 ### [Home](https://github.com/pmodels/argobots/wiki)
 
 ### Argobots Specification
+* [Introduction to Argobots](https://github.com/pmodels/argobots/wiki/Introduction-to-Argobots)
+* [Terms and Conventions](https://github.com/pmodels/argobots/wiki/Terms-and-Conventions)
+* [Data Types](https://github.com/pmodels/argobots/wiki/Data-Types)
+* [Init & Finalize](https://github.com/pmodels/argobots/wiki/Init-&-Finalize)
+* [Execution Stream (ES)](https://github.com/pmodels/argobots/wiki/Execution-Stream-(ES))
 
 ### Developer Documentation
 * [Getting and Building](https://github.com/pmodels/argobots/wiki/Getting-and-Building)
