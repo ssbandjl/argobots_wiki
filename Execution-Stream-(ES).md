@@ -367,11 +367,10 @@ int ABT_xstream_get_affinity(ABT_xstream xstream, int cpuset_size, int *cpuset,
   * `ABT_xstream_get_cpubind()` writes CPU IDs (at most, `cpuset_size`) to `cpuset` and returns the number of elements written to `cpuset` to `num_cpus`.  If `num_cpus` is `NULL`, it is ignored.
   * If `cpuset` is `NULL`, `cpuset_size` is ignored and the nubmer of all CPUs on which `xstream` is bound is returned through `num_cpus`. Otherwise, i.e., if `cpuset` is `NULL`, `cpuset_size` must be greater than zero.
 
-# ES Misc.
+# ES Information
 ## ABT_xstream_equal()
 ```c
-int ABT_xstream_equal(ABT_xstream xstream1, ABT_xstream xstream2,
-                      ABT_bool *result)
+int ABT_xstream_equal(ABT_xstream xstream1, ABT_xstream xstream2, ABT_bool *result)
 ```
 * Compare two ES handles for equality.
 * Parameters
@@ -410,3 +409,160 @@ int ABT_xstream_is_primary(ABT_xstream xstream, ABT_bool *flag)
   * On error, a non-zero error code is returned.
 * Details
   * `ABT_xstream_is_primary()` checks whether the target ES is the primary ES. If the ES `xstream` is the primary ES, `flag` is set to `ABT_TRUE`. Otherwise, `flag` is set to `ABT_FALSE`.
+
+# Work Unit Migration
+## ABT_xstream_migrate_threads()
+```c
+int ABT_xstream_migrate_threads(ABT_xstream source, ABT_xstream target, int n, ABT_bool blocking,
+        void (*cb_func)(ABT_thread *threads, int n, void *cb_arg), void *cb_arg, int cb_place)
+```
+* Migrate a certain number of ULTs associated with the source ES to the target ES.
+* Parameters
+  * [in] `source`: handle to the source ES
+  * [in] `target`: handle to the target ES
+  * [in] `n`: the number of ULTs to be migrated
+  * [in] `blocking`: Boolean value to indicate a blocking migration (`ABT_TRUE`) or a non-blocking migration (`ABT_FALSE`)
+  * [in] `cb_func`: callback function pointer
+  * [in] `cb_arg`: argument for the callback function
+  * [in] `cb_place`: bit-field to specify the location where the callback function is executed
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_migrate_threads()` migrates at most `n` ULTs from the source ES specified by `source` to the target ES specified by `target`. The ULTs will be added to proper pools of scheduler associated with the target ES, and they will be running on the target ES after migration. The actual number of migrated ULTs may be smaller than `n` depending on the number of migratable ULTs on the source ES. Users can get the actual number of migrated ULTs through the second argument of callback function.
+  * If `target` is `ABT_XSTREAM_NULL`, the target ES will be determined by the runtime. However, `source` cannot be `ABT_XSTREAM_NULL`.
+  * If `blocking` is `ABT_TRUE`, the migration operation is blocking, and the routine will return after migration. Otherwise, i.e., if `blocking` is `ABT_FALSE`, the migration operation is non-blocking. The routine requests the migration and returns immediately regardless of completion of migration.
+  * If a callback function, `cb_func`, is set (not `NULL`), it will be invoked with `cb_arg` when the migration happens. The runtime will provide the first argument `threads`, which is an array of ULTs migrated, and the second argument `n`, which is the number of ULTs actually migrated.
+  * `cb_place` is a bit-field to specify the location where the callback function is executed. If no callback function is set, `cb_place` is ignored. The following list describes the possible values of `cb_place`. If `cb_place` is 0, `ABT_CB_ON_TARGET` is used as the default value.
+    * `ABT_CB_ON_TARGET`: the callback function will be executed by the scheduler of target ES. 
+    * `ABT_CB_ON_SOURCE`: the callback function will be executed by the scheduler of source ES. `ABT_CB_ON_SOURCE` can be used with `ABT_CB_ON_TARGET` like `(ABT_CB_ON_TARGET | ABT_CB_ON_SOURCE)`, to execute the callback function on both sides.
+
+## ABT_xstream_migrate_threads_to_pool()
+```c
+int ABT_xstream_migrate_threads_to_pool(ABT_xstream source, ABT_pool target, int n, ABT_bool blocking,
+        void (*cb_func)(ABT_thread *threads, int n, void *cb_arg), void *cb_arg, int cb_place)
+```
+* Migrate a certain number of ULTs associated with the source ES to the target pool.
+* Parameters
+  * [in] `source`: handle to the source ES
+  * [in] `target`: handle to the target pool
+  * [in] `n`: the number of ULTs to be migrated
+  * [in] `blocking`: Boolean value to indicate a blocking migration (`ABT_TRUE`) or a non-blocking migration (`ABT_FALSE`)
+  * [in] `cb_func`: callback function pointer
+  * [in] `cb_arg`: argument for the callback function
+  * [in] `cb_place`: bit-field to specify the location where the callback function is executed
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_migrate_threads_to_pool()` migrates at most `n` ULTs from the source ES specified by `source` to the target pool specified by `target`. The actual number of migrated ULTs may be smaller than `n` depending on the number of migratable ULTs on the source ES. Users can get the actual number of migrated ULTs through the second argument of callback function.
+  * If `target` is `ABT_POOL_NULL`, the target pool will be determined by the runtime. However, source cannot be `ABT_XSTREAM_NULL`.
+  * If `blocking` is `ABT_TRUE`, the migration operation is blocking, and the routine will return after migration. Otherwise, i.e., if `blocking` is `ABT_FALSE`, the migration operation is non-blocking. The routine requests the migration and returns immediately regardless of completion of migration.
+  * If a callback function, `cb_func`, is set (not `NULL`), it will be invoked with `cb_arg` when the migration happens. The runtime will provide the first argument `threads`, which is an array of ULTs migrated, and the second argument `n`, which is the number of ULTs actually migrated.
+  * `cb_place` is a bit-field to specify the location where the callback function is executed. If no callback function is set, `cb_place` is ignored. The following list describes the possible values of `cb_place`. If `cb_place` is 0, `ABT_CB_ON_TARGET` is used as the default value.
+    * `ABT_CB_ON_TARGET`: the callback function will be executed by the scheduler associated with target pool.
+    * `ABT_CB_ON_SOURCE`: the callback function will be executed by the scheduler of source ES. `ABT_CB_ON_SOURCE` can be used with `ABT_CB_ON_TARGET` like `(ABT_CB_ON_TARGET | ABT_CB_ON_SOURCE)`, to execute the callback function on both sides.
+
+## ABT_xstream_migrate_tasks()
+```c
+int ABT_xstream_migrate_tasks(ABT_xstream source, ABT_xstream target, int n, ABT_bool blocking,
+        void (*cb_func)(ABT_task *tasks, int n, void *cb_arg), void *cb_arg, int cb_place)
+```
+* Migrate a certain number of tasklets associated with the source ES to the target ES.
+* Parameters
+  * [in] `source`: handle to the source ES
+  * [in] `target`: handle to the target ES
+  * [in] `n`: the number of tasklets to be migrated
+  * [in] `blocking`: Boolean value to indicate a blocking migration (`ABT_TRUE`) or a non-blocking migration (`ABT_FALSE`)
+  * [in] `cb_func`: callback function pointer
+  * [in] `cb_arg`: argument for the callback function
+  * [in] `cb_place`: bit-field to specify the location where the callback function is executed
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_migrate_tasks()` migrates at most `n` tasklets from the source ES specified by `source` to the target ES specified by `target`. The tasklets will be added to proper pools of scheduler associated with the target ES, and they will be running on the target ES after migration. The actual number of migrated tasklets may be smaller than `n` depending on the number of migratable tasklets on the source ES. Users can get the actual number of migrated tasklets through the second argument of callback function.
+  * If `target` is `ABT_XSTREAM_NULL`, the target ES will be determined by the runtime. However, `source` cannot be `ABT_XSTREAM_NULL`.
+  * If `blocking` is `ABT_TRUE`, the migration operation is blocking, and the routine will return after migration. Otherwise, i.e., if `blocking` is `ABT_FALSE`, the migration operation is non-blocking. The routine requests the migration and returns immediately regardless of completion of migration.
+  * If a callback function, `cb_func`, is set (not `NULL`), it will be invoked with `cb_arg` when the migration happens. The runtime will provide the first argument `tasks`, which is an array of tasklets migrated, and the second argument `n`, which is the number of tasklets actually migrated.
+  * `cb_place` is a bit-field to specify the location where the callback function is executed. If no callback function is set, `cb_place` is ignored. The following list describes the possible values of `cb_place`. If `cb_place` is 0, `ABT_CB_ON_TARGET` is used as the default value.
+    * `ABT_CB_ON_TARGET`: the callback function will be executed by the scheduler of target ES. 
+    * `ABT_CB_ON_SOURCE`: the callback function will be executed by the scheduler of source ES. `ABT_CB_ON_SOURCE` can be used with `ABT_CB_ON_TARGET` like `(ABT_CB_ON_TARGET | ABT_CB_ON_SOURCE)`, to execute the callback function on both sides.
+
+## ABT_xstream_migrate_tasks_to_pool()
+```c
+int ABT_xstream_migrate_tasks_to_pool(ABT_xstream source, ABT_pool target, int n, ABT_bool blocking,
+        void (*cb_func)(ABT_task *tasks, int n, void *cb_arg), void *cb_arg, int cb_place)
+```
+* Migrate a certain number of tasklets associated with the source ES to the target pool.
+* Parameters
+  * [in] `source`: handle to the source ES
+  * [in] `target`: handle to the target pool
+  * [in] `n`: the number of tasklets to be migrated
+  * [in] `blocking`: Boolean value to indicate a blocking migration (`ABT_TRUE`) or a non-blocking migration (`ABT_FALSE`)
+  * [in] `cb_func`: callback function pointer
+  * [in] `cb_arg`: argument for the callback function
+  * [in] `cb_place`: bit-field to specify the location where the callback function is executed
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_migrate_tasks_to_pool()` migrates at most `n` tasklets from the source ES specified by `source` to the target pool specified by `target`. The target pool can be any type of pool including global pools. The actual number of migrated tasklets may be smaller than `n` depending on the number of migratable tasklets on the source ES. Users can get the actual number of migrated tasklets through the second argument of callback function.
+  * If `target` is `ABT_POOL_NULL`, the target pool will be determined by the runtime. However, `source` cannot be `ABT_XSTREAM_NULL`.
+  * If `blocking` is `ABT_TRUE`, the migration operation is blocking, and the routine will return after migration. Otherwise, i.e., if `blocking` is `ABT_FALSE`, the migration operation is non-blocking. The routine requests the migration and returns immediately regardless of completion of migration.
+  * If a callback function, `cb_func`, is set (not `NULL`), it will be invoked with `cb_arg` when the migration happens. The runtime will provide the first argument `tasks`, which is an array of tasklets migrated, and the second argument `n`, which is the number of tasklets actually migrated.
+  * `cb_place` is a bit-field to specify the location where the callback function is executed. If no callback function is set, `cb_place` is ignored. The following list describes the possible values of `cb_place`. If `cb_place` is 0, `ABT_CB_ON_TARGET` is used as the default value.
+    * `ABT_CB_ON_TARGET`: the callback function will be executed by the scheduler associated with target pool. 
+    * `ABT_CB_ON_SOURCE`: the callback function will be executed by the scheduler of source ES. `ABT_CB_ON_SOURCE` can be used with `ABT_CB_ON_TARGET` like `(ABT_CB_ON_TARGET | ABT_CB_ON_SOURCE)`, to execute the callback function on both sides.
+
+## ABT_xstream_migrate_units()
+```c
+int ABT_xstream_migrate_units(ABT_xstream source, ABT_xstream target, int n, ABT_bool blocking,
+        void (*cb_func)(ABT_unit *units, int n, void *cb_arg), void *cb_arg, int cb_place)
+```
+* Migrate a certain number of work units associated with the source ES to the target ES.
+* Parameters
+  * [in] `source`: handle to the source ES
+  * [in] `target`: handle to the target ES
+  * [in] `n`: the number of work units to be migrated
+  * [in] `blocking`: Boolean value to indicate a blocking migration (`ABT_TRUE`) or a non-blocking migration (`ABT_FALSE`)
+  * [in] `cb_func`: callback function pointer
+  * [in] `cb_arg`: argument for the callback function
+  * [in] `cb_place`: bit-field to specify the location where the callback function is executed
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_migrate_units()` migrates at most `n` work units from the source ES specified by `source` to the target ES specified by `target`. The work units will be added to proper pools of scheduler associated with the target ES, and they will be running on the target ES after migration. The actual number of migrated work units may be smaller than `n` depending on the number of migratable work units on the source ES. Users can get the actual number of migrated work units through the second argument of callback function.
+  * If `target` is `ABT_XSTREAM_NULL`, the target ES will be determined by the runtime. However, `source` cannot be `ABT_XSTREAM_NULL`.
+  * If `blocking` is `ABT_TRUE`, the migration operation is blocking, and the routine will return after migration. Otherwise, i.e., if `blocking` is `ABT_FALSE`, the migration operation is non-blocking. The routine requests the migration and returns immediately regardless of completion of migration.
+  * If a callback function, `cb_func`, is set (not `NULL`), it will be invoked with `cb_arg` when the migration happens. The runtime will provide the first argument `units`, which is an array of work units migrated, and the second argument `n`, which is the number of work units actually migrated.
+  * `cb_place` is a bit-field to specify the location where the callback function is executed. If no callback function is set, `cb_place` is ignored. The following list describes the possible values of `cb_place`. If `cb_place` is 0, `ABT_CB_ON_TARGET` is used as the default value.
+    * `ABT_CB_ON_TARGET`: the callback function will be executed by the scheduler of target ES. 
+    * `ABT_CB_ON_SOURCE`: the callback function will be executed by the scheduler of source ES. `ABT_CB_ON_SOURCE` can be used with `ABT_CB_ON_TARGET` like `(ABT_CB_ON_TARGET | ABT_CB_ON_SOURCE)`, to execute the callback function on both sides.
+
+## ABT_xstream_migrate_units_to_pool()
+```c
+int ABT_xstream_migrate_units_to_pool(ABT_xstream source, ABT_pool target, int n, ABT_bool blocking,
+        void (*cb_func)(ABT_unit *units, int n, void *cb_arg), void *cb_arg, int cb_place)
+```
+* Migrate a certain number of work units associated with the source ES to the target pool.
+* Parameters
+  * [in] `source`: handle to the source ES
+  * [in] `target`: handle to the target pool
+  * [in] `n`: the number of work units to be migrated
+  * [in] `blocking`: Boolean value to indicate a blocking migration (`ABT_TRUE`) or a non-blocking migration (`ABT_FALSE`)
+  * [in] `cb_func`: callback function pointer
+  * [in] `cb_arg`: argument for the callback function
+  * [in] `cb_place`: bit-field to specify the location where the callback function is executed
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_migrate_units_to_pool()` migrates at most `n` work units from the source ES specified by `source` to the target pool specified by `target`. The actual number of migrated work units may be smaller than `n` depending on the number of migratable work units on the source ES. Users can get the actual number of migrated work units through the second argument of callback function.
+  * If `target` is `ABT_POOL_NULL`, the target pool will be determined by the runtime. However, `source` cannot be `ABT_XSTREAM_NULL`.
+  * If `blocking` is `ABT_TRUE`, the migration operation is blocking, and the routine will return after migration. Otherwise, i.e., if `blocking` is `ABT_FALSE`, the migration operation is non-blocking. The routine requests the migration and returns immediately regardless of completion of migration.
+  * If a callback function, `cb_func`, is set (not `NULL`), it will be invoked with `cb_arg` when the migration happens. The runtime will provide the first argument `units`, which is an array of work units migrated, and the second argument `n`, which is the number of work units actually migrated.
+  * `cb_place` is a bit-field to specify the location where the callback function is executed. If no callback function is set, `cb_place` is ignored. The following list describes the possible values of `cb_place`. If `cb_place` is 0, `ABT_CB_ON_TARGET` is used as the default value.
+    * `ABT_CB_ON_TARGET`: the callback function will be executed by the scheduler associated with target pool. 
+    * `ABT_CB_ON_SOURCE`: the callback function will be executed by the scheduler of source ES. `ABT_CB_ON_SOURCE` can be used with `ABT_CB_ON_TARGET` like `(ABT_CB_ON_TARGET | ABT_CB_ON_SOURCE)`, to execute the callback function on both sides.
