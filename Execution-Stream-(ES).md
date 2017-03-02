@@ -202,3 +202,211 @@ int ABT_xstream_get_rank(ABT_xstream xstream, int *rank)
   * On error, a non-zero error code is returned.
 * Details
   * `ABT_xstream_get_rank()` returns the rank of target ES through `rank`.
+
+## ABT_xstream_set_main_sched()
+```c
+int ABT_xstream_set_main_sched(ABT_xstream xstream, ABT_sched sched)
+```
+* Set the main scheduler of the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [out] `sched`: handle to the scheduler
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_set_main_sched()` sets `sched` as the main scheduler for `xstream`. The scheduler `sched` will first run when the ES `xstream` is started.  Only ULTs are allowed to call this function.
+  * If `xstream` is a handle to the primary ES, `sched` will be automatically freed on `ABT_finalize()` or when the main scheduler of the primary ES is changed again.  In this case, the explicit call `ABT_sched_free()` for `sched` may cause undefined behavior.
+
+## ABT_xstream_set_main_sched_basic()
+```c
+int ABT_xstream_set_main_sched_basic(ABT_xstream xstream,
+        ABT_sched_predef predef, int num_pools, ABT_pool *pools)
+```
+* Set the main scheduler for the target ES with a predefined scheduler.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [in] `predef`: predefined scheduler
+  * [in] `num_pools`: number of pools
+  * [in] `pools`: pools to be associated with the scheduler
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_set_main_sched_basic()` internally creates a scheduler of the `predef` type, which uses the array of pools `pools` whose number of elements is `num_pools`, and sets the created scheduler as the main scheduler for `xstream`. The scheduler will first run when the ES `xstream` is started.  Only ULTs are allowed to call this function.
+  * The scheduler created in this function will be automatically freed when the associated ES is freed.
+
+## ABT_xstream_get_main_sched()
+```c
+int ABT_xstream_get_main_sched(ABT_xstream xstream, ABT_sched *sched)
+```
+* Get the main scheduler of the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [out] `sched`: handle to the scheduler
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_get_main_sched()` returns the handle of the main scheduler for the target ES `xstream` through `sched`.
+
+## ABT_xstream_get_main_pools()
+```c
+int ABT_xstream_get_main_pools(ABT_xstream xstream, int max_pools, ABT_pool *pools)
+```
+* Get the pools of the main scheduler of the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [in] `max_pools`: maximum number of pools
+  * [out] `pools`: array of handles to the pools
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_get_main_pools()` returns at most `max_pools` pools of the main scheduler associated with the ES `xstream`.  Basically, this function is a convenient function that calls `ABT_xstream_get_main_sched()` to get the main scheduler, and then `ABT_sched_get_pools()` to retrieve the associated pools.
+
+## ABT_xstream_get_state()
+```c
+int ABT_xstream_get_state(ABT_xstream xstream, ABT_xstream_state *state)
+```
+* Return the state of the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [out] `state`: ES state
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_get_state()` returns the state of target ES `xstream`. It returns one of the [ABT_xstream_state](https://github.com/pmodels/argobots/wiki/Data-Types#abt_xstream_state) values.
+
+## ABT_xstream_run_unit()
+```c
+int ABT_xstream_run_unit(ABT_unit unit, ABT_pool pool)
+```
+* Execute a unit on the local ES.
+* Parameters
+  * [in] `unit`: handle to the unit to run
+  * [out] `pool`: pool where the unit came from
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_run_unit()` executes the work unit `unit`, which was popped from `pool`, on the local ES. The local ES means the ES associated with the caller of this function. This function is intended to be called by a scheduler after picking up one unit. Thus, this function is expected to be used when the users write their own scheduler.
+
+## ABT_xstream_check_events()
+```c
+int ABT_xstream_check_events(ABT_sched sched)
+```
+* Check events on the local ES and process them.
+* Parameter
+  * [in] `sched`: handle to the scheduler
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_check_events()` checks events associated with the scheduler `sched` on the local ES, i.e., the ES associated with the caller of this function, and the events are handled in this function if they have occurred. This function is intended to be called by a scheduler periodically, thus it is expected that the users call this function in their own scheduler definition.
+
+## ABT_xstream_set_cpubind()
+```c
+int ABT_xstream_set_cpubind(ABT_xstream xstream, int cpuid)
+```
+* Bind the target ES to a target CPU.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [in] `cpuid`: CPU ID
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_set_cpubind()` binds the target ES `xstream` to the target CPU whose ID is `cpuid`.  Here, the CPU ID corresponds to the processor index used by OS.
+
+## ABT_xstream_get_cpubind()
+```c
+int ABT_xstream_get_cpubind(ABT_xstream xstream, int *cpuid)
+```
+* Get the CPU binding for the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [out] `cpuid`: CPU ID
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_get_cpubind()` returns the ID of CPU, which the target ES `xstream` is bound to. If `xstream` is bound to more than one CPU, only the first CPU ID is returned.
+
+## ABT_xstream_set_affinity()
+```c
+int ABT_xstream_set_affinity(ABT_xstream xstream, int cpuset_size, int *cpuset)
+```
+* Set the CPU affinity of the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [in] `cpuset_size`: the number of `cpuset` entries
+  * [in] `cpuset`: array of CPU IDs
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_set_cpubind()` binds the target ES `xstream` on the given CPU set, `cpuset`, which is an array of CPU IDs.  Here, the CPU IDs correspond to processor indexes used by OS.
+
+## ABT_xstream_get_affinity()
+```c
+int ABT_xstream_get_affinity(ABT_xstream xstream, int cpuset_size, int *cpuset,
+                             int *num_cpus)
+```
+* Get the CPU affinity for the target ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [in] `cpuset_size`: the number of \c cpuset entries
+  * [out] `cpuset`: array of CPU IDs
+  * [out] `num_cpus`: the number of total CPU IDs
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_get_cpubind()` writes CPU IDs (at most, `cpuset_size`) to `cpuset` and returns the number of elements written to `cpuset` to `num_cpus`.  If `num_cpus` is `NULL`, it is ignored.
+  * If `cpuset` is `NULL`, `cpuset_size` is ignored and the nubmer of all CPUs on which `xstream` is bound is returned through `num_cpus`. Otherwise, i.e., if `cpuset` is `NULL`, `cpuset_size` must be greater than zero.
+
+# ES Misc.
+## ABT_xstream_equal()
+```c
+int ABT_xstream_equal(ABT_xstream xstream1, ABT_xstream xstream2,
+                      ABT_bool *result)
+```
+* Compare two ES handles for equality.
+* Parameters
+  * [in] `xstream1`: handle to the ES 1
+  * [in] `xstream2`: handle to the ES 2
+  * [out] `handle to the ES 2`: comparison result (`ABT_TRUE`: same, `ABT_FALSE`: not same)
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_equal()` compares two ES handles for equality. If two handles are associated with the same ES, `result` will be set to `ABT_TRUE`. Otherwise, `result` will be set to `ABT_FALSE`.
+
+## ABT_xstream_get_num()
+```c
+int ABT_xstream_get_num(int *num_xstreams)
+```
+* Return the number of current existing ESs.
+* Parameter
+  * [out] `num_xstreams`: the number of ESs
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_get_num()` returns the number of ESs that exist in the current Argobots environment through `num_xstreams`.
+
+## ABT_xstream_is_primary()
+```c
+int ABT_xstream_is_primary(ABT_xstream xstream, ABT_bool *flag)
+```
+* Check if the target ES is the primary ES.
+* Parameters
+  * [in] `xstream`: handle to the target ES
+  * [out] `flag`: result (`ABT_TRUE`: primary ES, `ABT_FALSE`: not)
+* Return values
+  * On success, `ABT_SUCCESS` is returned.
+  * On error, a non-zero error code is returned.
+* Details
+  * `ABT_xstream_is_primary()` checks whether the target ES is the primary ES. If the ES `xstream` is the primary ES, `flag` is set to `ABT_TRUE`. Otherwise, `flag` is set to `ABT_FALSE`.
