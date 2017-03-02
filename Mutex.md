@@ -1,0 +1,2 @@
+# Introduction
+Mutex is a synchronization method to support mutual exclusion between ULTs. When more than one ULT competes for locking the same mutex, only one ULT is guaranteed to lock the mutex. Other ULTs are blocked and wait until the ULT which locked the mutex unlocks it. When the mutex is unlocked, another ULT is able to lock the mutex again.
