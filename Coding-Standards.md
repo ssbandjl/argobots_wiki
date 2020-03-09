@@ -1,15 +1,22 @@
 # General Principles
-Coding standards are intended to make this project more successful and enjoyable. Some general guidelines are the following:
-* Use the [K&R style](https://en.wikipedia.org/wiki/Indent_style#K.26R_style)
-* Use four spaces instead of using tab when you indent the code
+Coding standards are intended to make this project more successful and enjoyable. We now use our custom coding style in favor of clang-format (https://clang.llvm.org/docs/ClangFormat.html).  This style is based on [K&R style](https://en.wikipedia.org/wiki/Indent_style#K.26R_style) with four spaces for an indent.
+
+# Before Creating a PR
+
+The Argobots project uses a style checker. Before you create a PR, please pass the following script:
+```
+maint/code-cleanup.sh YOURCODE
+```
+
+If you want to perform this clean-up script through all your code files in the current directory, type as follows:
+```
+maint/code-cleanup.sh --all --recursive
+```
+You will find a test failure if your PR does not comply with this style checker.
 
 # Basic Source File Structure
 All source files follow similar structure; the file `maint/template.c` gives an example.
 ```c
-/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
-/*
- * See COPYRIGHT in top-level directory.
- */ 
 #include "abti.h"
 
 int ABTI_template(ABTI_thread *p_thread, void *p_arg)
@@ -25,11 +32,10 @@ int ABTI_template(ABTI_thread *p_thread, void *p_arg)
     /* Implementation */
     /* ... */
 
-  fn_exit:
+fn_exit:
     return abt_errno;
 
-  fn_fail:
-    /* Error handling */
+fn_fail:
     goto fn_exit;
 }
 ```
