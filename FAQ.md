@@ -1,10 +1,12 @@
-1. [`autogen.sh` Errors](#autogen)
+1. [`autogen.sh` shows errors](#autogen)
    * ['LIBTOOL' is undefined](#libtool)
+2. [Does Argobots work with address sanitizers?](#asan)
 
+## <a name="autogen"> 1. autogen.sh shows errors</a>
+### <a name="libtool">'LIBTOOL' is undefined</a>
+If you download a release tarball of Argobots, you don't need to run `./autogen.sh`.  `configure` exists.
 
-# <a name="autogen">`autogen.sh` Errors</a>
-## <a name="libtool">'LIBTOOL' is undefined</a>
-If you get this error when running `./autogen.sh`
+If you clone Argobots from GitHub, you need to run `./autogen.sh` to create `configure`. If you get this error when running `./autogen.sh`
 ```
 =================================================================
 Checking autotools installations
@@ -39,10 +41,19 @@ Makefile.am:12: its definition is in aclocal's search path.
 Makefile.am: installing 'm4/depcomp' 
 autoreconf: automake failed with exit status: 1
 ```
-Then, try running the following sequence:
+First, please confirm that your system has `libtool`.
+
+If your system has `libtool` but still shows this error, try running the following sequence:
 ```
 $ libtoolize
 $ aclocal
 $ autoheader
 ```
 
+## <a name="asan">2. Does Argobots work with address sanitizers?</a>
+
+Basically supported.
+
+Argobots 1.1b1 and later versions are regularly tested with address sanitizers of relatively newer GCC and Clang (i.e., GCC 9.1 and Clang 10.0). Argobots should work with them without any special flags. Because user-level context switches used in Argobots manipulate stack pointers and instruction addresses in an unusual way, however, we cannot guarantee that all versions of address sanitizers perfectly work with Argobots.  For example, older or newer address sanitizers of GCC and Clang might warn Argobots' user-level context switches.
+
+We would like to support as many versions of address sanitizers (especially those of GCC and Clang) as we can.  If you find any issues, please let us know.
