@@ -52,7 +52,7 @@ $ autoheader
 
 ## <a name="asan">2. Does Argobots work with address sanitizers?</a>
 
-Basically supported.
+Yes. Argobots supports address sanitizers of GCC and Clang.
 
 Argobots 1.1b1 and later versions are regularly tested with address sanitizers of relatively newer GCC and Clang (i.e., GCC 9.1 and Clang 10.0). Argobots should work with them without any special flags. Because user-level context switches used in Argobots manipulate stack pointers and instruction addresses in an unusual way, however, we cannot guarantee that all versions of address sanitizers perfectly work with Argobots.  For example, older or newer address sanitizers of GCC and Clang might warn Argobots' user-level context switches.
 
