@@ -14,6 +14,8 @@ This page presents data types, null objects, constants, and error classes used i
 ## Object Types
 All Argobots objects are opaque to users and can only be accessed via handles. All public APIs use handles or pointers to handles.
 
+所有 Argobots 对象对用户都是不透明的，只能通过句柄访问。 所有公共 API 使用句柄或指向句柄的指针。
+
 | Type Name             | Description                           |
 | --------------------- | ------------------------------------- |
 | `ABT_xstream`         | Handle to Execution Stream (ES)       |
@@ -55,6 +57,8 @@ All Argobots objects are opaque to users and can only be accessed via handles. A
 
 ## Other Types
 These are function pointers and struct types for scheduler and pool.
+
+这些是调度程序和池的函数指针和结构类型。
 
 ### Scheduler-related Types
 | Type Name                    | Description                                                                       |
@@ -138,7 +142,7 @@ enum ABT_sched_predef {
     ABT_SCHED_DEFAULT,   /* Default scheduler */
     ABT_SCHED_BASIC,     /* Basic scheduler */
     ABT_SCHED_PRIO,      /* Priority scheduler */
-    ABT_SCHED_RANDWS     /* Random work-stealing scheduler */
+    ABT_SCHED_RANDWS     /* Random work-stealing scheduler 随机工作窃取调度程序 */
 };
 ```
 

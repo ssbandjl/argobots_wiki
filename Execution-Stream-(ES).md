@@ -40,17 +40,28 @@
 # Introduction
 Execution Stream (ES) is the execution of a sequential instruction stream. Each instruction does not necessarily need to be SISD, but can also be vector or SIMD instructions. When bound to a hardware processing element (PE), ES can be thought as its software equivalent. Argobots considers one ES per PE. Oversubscription of ESs is possible but is not recommended.
 
+执行流（ES）是顺序指令流的执行。 每条指令不一定是SISD，也可以是vector或SIMD指令。 当绑定到硬件处理元素 (PE) 时，ES 可以被认为是它的软件等价物。 Argobots 考虑每个 PE 一个 ES。 可以超额订阅 ES，但不建议这样做。
+
 ES is conceptually a container of work units, which are User-level Threads (ULTs) or tasklets. Work units execute to completion, but their execution may be interleaved inside an ES. Since ES is a sequential instruction stream, there is no parallel execution of work units in a single ES. Only one work unit runs in an ES at a certain point. However, work units in different ESs can be executed in parallel. ES has implicitly-managed progress semantics handled by kernel or hardware, and thus one blocked ES cannot block other ESs.
+
+ES 在概念上是工作单元的容器，工作单元是用户级线程 (ULT) 或微线程。 工作单元执行到完成，但它们的执行可能在 ES 中交错。 由于 ES 是顺序指令流，因此在单个 ES 中不存在工作单元的并行执行。 在某一时刻，只有一个工作单元在一个 ES 中运行。 但是，不同 ES 中的工作单元可以并行执行。 ES 具有由内核或硬件处理的隐式管理的进度语义，因此一个阻塞的 ES 不能阻塞其他 ES。
 
 Each ES executes all associated work units according to the scheduling policy. The scheduler associated with the ES is in charge of scheduling. ES has its own scheduler and different ESs can adopt different schedulers. The Argobots runtime provides some predefined schedulers, but users can also create their own schedulers.
 
+每个 ES 根据调度策略执行所有关联的工作单元。 与ES关联的调度器负责调度。 ES有自己的调度器，不同的ES可以采用不同的调度器。 Argobots 运行时提供了一些预定义的调度器，但用户也可以创建自己的调度器。
+
 ## ES Types
 Argobots categorizes ESs into two types: primary and secondary. A major difference between them is that users can only create secondary ESs but not the primary ES.
+Argobots 将 ES 分为两种类型：初级和次级。 它们之间的一个主要区别是用户只能创建辅助 ES 而不能创建主 ES。
 * **Primary ES (initial ES)**. This is the ES that automatically starts when the Argobots library is initialized. It cannot be created explicitly, and an application has only one primary ES. When the primary ES starts, it implicitly contains one ULT, which has started the main function. In other words, when the Argobots is initialized, there exists one primary ES containing one ULT. Primary ES establishes parent/child relationship with secondary ESs. When it terminates, all secondary ESs are terminated.
+初级 ES（初始 ES）。 这是Argobots库初始化时自动启动的ES。 不能显式创建，一个应用只有一个主 ES。 当主 ES 启动时，它隐式包含一个 ULT，它已经启动了 main 函数。 换句话说，当 Argobots 被初始化时，存在一个包含一个 ULT 的主 ES。 主要 ES 与次要 ES 建立父/子关系。 当它终止时，所有辅助 ES 都将终止。
 * **Secondary ES**. Secondary ESs are ESs other than the primary ES. They are explicitly created at run time, and any work unit can create them. There is no parent/child relationship between secondary ESs. Termination of a secondary ES does not affect execution of other ESs including both primary ES and secondary ESs.
+二级 ES。 辅助 ES 是主要 ES 之外的 ES。 它们是在运行时显式创建的，任何工作单元都可以创建它们。 辅助 ES 之间没有父/子关系。 终止辅助 ES 不会影响其他 ES 的执行，包括主要 ES 和辅助 ES。
 
 ## ES States
 ES stays in one state at a certain point in time during its execution. Possible states of ES are CREATED, READY, RUNNING, and TERMINATED, and they correspond to `ABT_XSTREAM_STATE_CREATED`, `ABT_XSTREAM_STATE_READY`, `ABT_XSTREAM_STATE_RUNNING`, and `ABT_XSTREAM_STATE_TERMINATED` of `enum ABT_xstream_state`, respectively. The ES's state can be obtained with `ABT_xstream_get_state()`.
+
+ES在执行过程中的某个时间点处于一种状态。 ES 的可能状态有 CREATED、READY、RUNNING 和 TERMINATED，它们分别对应于枚举 ABT_xstream_state 的 ABT_XSTREAM_STATE_CREATED、ABT_XSTREAM_STATE_READY、ABT_XSTREAM_STATE_RUNNING 和 ABT_XSTREAM_STATE_TERMINATED。 ES 的状态可以通过 ABT_xstream_get_state() 获得。
 
 [[https://github.com/pmodels/argobots/blob/master/doc/img/es_states.png|alt=ES_states]]
 
@@ -62,13 +73,21 @@ The following describes each state of ES:
 **READY**
 * ES's state becomes READY when the ES starts its execution. The Argobots implementation may start ES immediately when it is created or delay until any work unit gets associated with the ES or the user explicitly starts the ES's execution. Once ES enters the READY state, it waits for creation of work units in the READY state.
 
+当 ES 开始执行时，ES 的状态变为 READY。 Argobots 实现可以在 ES 创建时立即启动，也可以延迟到任何工作单元与 ES 关联或用户明确启动 ES 的执行。 一旦 ES 进入 READY 状态，它会等待创建处于 READY 状态的工作单元。
+
 **RUNNING**
 * When there exist work units to execute, ES moves to the RUNNING state, and it keeps the RUNNING state while there remain work units. If there is no more work unit to execute, the ES changes its state to READY again.
+
+当存在要执行的工作单元时，ES 进入 RUNNING 状态，并在有剩余工作单元时保持 RUNNING 状态。 如果没有更多的工作单元要执行，则 ES 再次将其状态更改为 READY。
 
 **TERMINATED**
 * When there is a join request, ES's state becomes TERMINATED. In the CREATED state, it is immediately terminated. However, in other states, it will be terminated after finishing execution of all associated work units. It processes the join request only when it is in READY state.
 * When a work unit invokes the ES exit function, its associated ES is terminated irrespective of the existence of work units and the ES's state becomes TERMINATED. The user has to migrate remaining work units associated with the terminating ES, if necessary.
 * When there is a cancel request, ES's state becomes TERMINATED from all states. When a work unit is running, i.e., the ES is in RUNNING state, the ES will be terminated after the associated scheduler gets a chance to execute. Like the ES exit function, the user may need to migrate remaining work units associated with the terminating ES, if necessary.
+
+当有加入请求时，ES 的状态变为 TERMINATED。 在 CREATED 状态下，它立即终止。 但是，在其他状态下，它将在所有相关工作单元执行完毕后终止。 它仅在处于 READY 状态时才处理加入请求。
+当工作单元调用 ES 退出函数时，无论工作单元是否存在，其关联的 ES 都会终止，并且 ES 的状态变为 TERMINATED。 如有必要，用户必须迁移与终止 ES 关联的剩余工作单元。
+当有取消请求时，ES的状态从所有状态变为TERMINATED。 当工作单元正在运行时，即 ES 处于 RUNNING 状态，ES 将在关联的调度程序有机会执行后终止。 与 ES 退出功能一样，如果需要，用户可能需要迁移与终止 ES 关联的剩余工作单元。
 
 # ES Execution
 ## ABT_xstream_create()
@@ -160,6 +179,7 @@ int ABT_xstream_join(ABT_xstream xstream)
   * On error, a non-zero error code is returned.
 * Details
   * The caller of `ABT_xstream_join()` waits for the ES to terminate. If the target ES has already terminated, this function returns immediately.
+  等待 ES 终止。 如果目标 ES 已经终止，则此函数立即返回
   * The target ES cannot be the same as the ES associated with the calling work unit. And the primary ES cannot be joined. If one of these conditions is violated, this routine will return the error code, `ABT_ERR_INV_XSTREAM`.
 
 ## ABT_xstream_exit()
@@ -344,6 +364,8 @@ int ABT_xstream_check_events(ABT_sched sched)
   * On error, a non-zero error code is returned.
 * Details
   * `ABT_xstream_check_events()` checks events associated with the scheduler `sched` on the local ES, i.e., the ES associated with the caller of this function, and the events are handled in this function if they have occurred. This function is intended to be called by a scheduler periodically, thus it is expected that the users call this function in their own scheduler definition.
+
+  ABT_xstream_check_events() 检查与本地 ES 上调度程序关联的事件，即与该函数的调用者关联的 ES，如果事件发生，则在该函数中处理。 此函数旨在由调度程序定期调用，因此希望用户在他们自己的调度程序定义中调用此函数。
 
 ## ABT_xstream_set_cpubind()
 ```c

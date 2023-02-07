@@ -1,6 +1,8 @@
 # Introduction
 User-level Threads (ULTs) are independent execution units in user space. ULT is associated with a function and has its own stack. ULTs provide standard thread semantics at a very low context-switching cost. ULTs are yieldable and can be explicitly yielded to using their handles.
 
+用户级线程（ULT）是用户空间中的独立执行单元。 ULT 与一个函数相关联，并有自己的堆栈。 ULT 以非常低的上下文切换成本提供标准线程语义。 ULT 是可屈服的，并且可以显式屈服以使用它们的句柄。
+
 ULTs can make blocking calls, but users must be careful. If a ULT is blocked without yielding, it will block the entire ES. An efficient user library built on Argobots should design carefully to reduce the blocking time as much as possible.
 
 Each ULT executes inside the associated ES and it is scheduled by the scheduler in the ES. ULTs in a single ES are not executed in parallel, i.e., only one ULT runs in an ES at a specific point in time. However, ULTs in different ESs may run in parallel as ESs execute concurrently.
